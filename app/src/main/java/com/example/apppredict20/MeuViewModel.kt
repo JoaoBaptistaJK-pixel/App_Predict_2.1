@@ -1,3 +1,4 @@
+
 package com.example.apppredict20
 
 import androidx.compose.runtime.getValue
@@ -13,22 +14,34 @@ class MeuViewModel : ViewModel() {
     var produtos by mutableStateOf(listOf<Produto>())
         private set
 
+    private var aoCadastrar: ((Produto) -> Unit)? = null
+    private var aoEditar: ((Produto) -> Unit)? = null
+    private var aoExcluir: ((Long) -> Unit)? = null
+
+    fun configurarPersistencia(
+        cadastrar: (Produto) -> Unit,
+        editar: (Produto) -> Unit,
+        excluir: (Long) -> Unit
+    ) {
+        aoCadastrar = cadastrar
+        aoEditar = editar
+        aoExcluir = excluir
+    }
+
+    fun atualizarProdutos(lista: List<Produto>) {
+        produtos = lista
+    }
+
     fun cadastrarProduto(produto: Produto) {
-        produtos = produtos + produto
+        aoCadastrar?.invoke(produto)
     }
 
     fun editarProduto(produtoAtualizado: Produto) {
-        produtos = produtos.map { produto ->
-            if (produto.id == produtoAtualizado.id) {
-                produtoAtualizado
-            } else {
-                produto
-            }
-        }
+        aoEditar?.invoke(produtoAtualizado)
     }
 
     fun excluirProduto(id: Long) {
-        produtos = produtos.filter { it.id != id }
+        aoExcluir?.invoke(id)
     }
 
     fun buscarProduto(id: Long): Produto? {
@@ -40,12 +53,14 @@ class MeuViewModel : ViewModel() {
     }
 
     fun verificarValidade(produto: Produto): String {
-
         val formato = DateTimeFormatter.ofPattern("dd/MM/uuuu")
         val dataValidade = LocalDate.parse(produto.validade, formato)
         val hoje = LocalDate.now()
 
-        val diasRestantes = ChronoUnit.DAYS.between(hoje, dataValidade)
+        val diasRestantes = ChronoUnit.DAYS.between(
+            hoje,
+            dataValidade
+        )
 
         return when {
             diasRestantes < 0 -> "Vencido"
@@ -53,5 +68,4 @@ class MeuViewModel : ViewModel() {
             else -> "Dentro da validade"
         }
     }
-
 }
