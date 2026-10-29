@@ -559,15 +559,23 @@ Formulário de edição do nome e da descrição de uma categoria cadastrada.
 <img src="imagens/09-editar-categoria.jpg" width="280" alt="Edição de categorias">
 
 
+
 ### Vídeos de demonstração
 
-**Vídeo 1 — CRUD de produtos e persistência**
+Os vídeos abaixo apresentam o funcionamento do App Predict em duas etapas do desenvolvimento, permitindo visualizar a evolução do aplicativo.
 
-[Inserir link do vídeo]
+#### 🎬 Trabalho 2 — Versão anterior
 
-**Vídeo 2 — CRUD de categorias e persistência**
+Demonstração da versão anterior do App Predict, com as funcionalidades de gerenciamento de produtos e controle de validade, antes da implementação da persistência com Room.
 
-[Inserir link do vídeo]
+[▶️ Assistir ao vídeo do Trabalho 2](https://drive.google.com/file/d/1nFc7S3BBMegZCedQ0L5xJkK1q8yfhy_t/view?usp=sharing)
+
+#### 🎬 Trabalho 3 — Versão atual
+
+Demonstração da versão atual do App Predict, desenvolvida com persistência de dados utilizando Room e com o gerenciamento de produtos e categorias.
+
+[▶️ Assistir ao vídeo do Trabalho 3](https://drive.google.com/file/d/1xlR0gcYRHbHvtnJeX8Ybyrci6raELnla/view?usp=sharing)
+
 
 ---
 
