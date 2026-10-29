@@ -1,15 +1,16 @@
 
 package com.example.apppredict20
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,9 +22,8 @@ fun AppNavigation() {
     val viewModel: MeuViewModel = viewModel()
 
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
-    val banco = remember {
+    val banco = remember(context) {
         AppDatabase.obterBanco(context)
     }
 
@@ -31,43 +31,71 @@ fun AppNavigation() {
         banco.produtoDAO()
     }
 
-    // Consulta os produtos armazenados no Room
     suspend fun carregarProdutos() {
-        val lista = withContext(Dispatchers.IO) {
-            produtoDAO.listarProdutos()
-        }
+        try {
+            val lista = withContext(Dispatchers.IO) {
+                produtoDAO.listarProdutos()
+            }
 
-        viewModel.atualizarProdutos(lista)
+            withContext(Dispatchers.Main) {
+                viewModel.atualizarProdutos(lista)
+            }
+
+        } catch (e: Exception) {
+            Log.e("AppPredict", "Erro ao buscar produtos", e)
+        }
     }
 
-    // Liga as operações do ViewModel ao Room
     LaunchedEffect(viewModel, produtoDAO) {
 
         viewModel.configurarPersistencia(
 
             cadastrar = { produto ->
-                scope.launch {
-                    withContext(Dispatchers.IO) {
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
                         produtoDAO.cadastrarProduto(produto)
+                        carregarProdutos()
+
+                    } catch (e: Exception) {
+                        Log.e("AppPredict", "Erro ao cadastrar", e)
                     }
-                    carregarProdutos()
                 }
             },
 
             editar = { produto ->
-                scope.launch {
-                    withContext(Dispatchers.IO) {
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
                         produtoDAO.editarProduto(produto)
+                        carregarProdutos()
+
+                    } catch (e: Exception) {
+                        Log.e("AppPredict", "Erro ao editar", e)
                     }
-                    carregarProdutos()
                 }
             },
 
             excluir = { id ->
-                scope.launch {
-                    withContext(Dispatchers.IO) {
-                        produtoDAO.excluirProduto(id)
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val produto = produtoDAO.buscarPorId(id)
+
+                        if (produto != null) {
+                            produtoDAO.excluirProduto(produto)
+                            carregarProdutos()
+                        }
+
+                    } catch (e: Exception) {
+                        Log.e("AppPredict", "Erro ao excluir", e)
                     }
+                }
+            },
+
+            recarregar = {
+
+                CoroutineScope(Dispatchers.IO).launch {
                     carregarProdutos()
                 }
             }
@@ -101,7 +129,7 @@ fun AppNavigation() {
 
             val id = entrada.arguments
                 ?.getString("id")
-                ?.toLongOrNull()
+                ?.toIntOrNull()
 
             val produto = id?.let {
                 viewModel.buscarProduto(it)
@@ -131,22 +159,19 @@ fun AppNavigation() {
 
             val id = entrada.arguments
                 ?.getString("id")
-                ?.toLongOrNull()
+                ?.toIntOrNull()
 
-            val produto = id?.let {
-                viewModel.buscarProduto(it)
-            }
-
-            if (produto != null) {
+            if (id != null) {
                 TelaDetalhes(
-                    produto = produto,
+                    produtoId = id,
+                    produtoDAO = produtoDAO,
                     viewModel = viewModel,
                     onVoltar = {
                         navController.popBackStack()
                     },
                     onEditar = {
                         navController.navigate(
-                            "${Rotas.EDITAR}/${produto.id}"
+                            "${Rotas.EDITAR}/$id"
                         )
                     }
                 )

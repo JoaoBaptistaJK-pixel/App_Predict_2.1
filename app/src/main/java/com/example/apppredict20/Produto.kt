@@ -10,6 +10,6 @@ data class Produto(
     val quantidade: Int,
     val validade: String,
 
-    @PrimaryKey
-    val id: Long = System.nanoTime()
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0
 )

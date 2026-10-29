@@ -1,11 +1,11 @@
 
 package com.example.apppredict20
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.LocalDate
@@ -29,10 +28,11 @@ fun TelaCadastro(
     viewModel: MeuViewModel,
     onVoltar: () -> Unit
 ) {
+
     var nome by remember { mutableStateOf("") }
     var quantidade by remember { mutableStateOf("") }
     var validade by remember { mutableStateOf("") }
-    var mensagemErro by remember { mutableStateOf("") }
+    var erro by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -63,6 +63,7 @@ fun TelaCadastro(
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp)
         ) {
+
             Text(
                 text = "Novo produto",
                 style = MaterialTheme.typography.headlineMedium,
@@ -87,74 +88,65 @@ fun TelaCadastro(
                     containerColor = Color.White
                 )
             ) {
+
                 Column(
-                    modifier = Modifier.padding(20.dp)
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
 
                     Text(
                         text = "Informações do produto",
-                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = PetrolBlueDark
                     )
-
-                    Spacer(modifier = Modifier.height(18.dp))
 
                     OutlinedTextField(
                         value = nome,
                         onValueChange = {
                             nome = it
-                            mensagemErro = ""
+                            erro = ""
                         },
                         label = { Text("Nome do produto") },
-                        placeholder = { Text("Ex.: Arroz") },
-                        singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
                         shape = RoundedCornerShape(12.dp)
                     )
-
-                    Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedTextField(
                         value = quantidade,
                         onValueChange = {
                             quantidade = it
-                            mensagemErro = ""
+                            erro = ""
                         },
                         label = { Text("Quantidade") },
-                        placeholder = { Text("Ex.: 5") },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         ),
-                        singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
                         shape = RoundedCornerShape(12.dp)
                     )
-
-                    Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedTextField(
                         value = validade,
                         onValueChange = {
                             validade = it
-                            mensagemErro = ""
+                            erro = ""
                         },
                         label = { Text("Validade (DD/MM/AAAA)") },
-                        placeholder = { Text("Ex.: 20/10/2026") },
-                        singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
                         shape = RoundedCornerShape(12.dp)
                     )
                 }
             }
 
-            if (mensagemErro.isNotEmpty()) {
+            if (erro.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = mensagemErro,
-                    color = ErrorColor,
-                    fontSize = 14.sp
+                    text = erro,
+                    color = ErrorColor
                 )
             }
 
@@ -162,7 +154,8 @@ fun TelaCadastro(
 
             Button(
                 onClick = {
-                    val quantidadeNumero = quantidade.toIntOrNull()
+
+                    val qtd = quantidade.toIntOrNull()
 
                     val formato = DateTimeFormatter
                         .ofPattern("dd/MM/uuuu")
@@ -176,22 +169,23 @@ fun TelaCadastro(
                     }
 
                     if (nome.isBlank()) {
-                        mensagemErro = "Digite o nome do produto."
-                    } else if (
-                        quantidadeNumero == null ||
-                        quantidadeNumero <= 0
-                    ) {
-                        mensagemErro = "Digite uma quantidade válida."
+                        erro = "Digite o nome do produto."
+
+                    } else if (qtd == null || qtd <= 0) {
+                        erro = "Digite uma quantidade válida."
+
                     } else if (!dataValida) {
-                        mensagemErro = "Digite uma data válida (DD/MM/AAAA)."
+                        erro = "Digite uma data válida (DD/MM/AAAA)."
+
                     } else {
-                        val produto = Produto(
-                            nome = nome.trim(),
-                            quantidade = quantidadeNumero,
-                            validade = validade
+                        viewModel.cadastrarProduto(
+                            Produto(
+                                nome = nome.trim(),
+                                quantidade = qtd,
+                                validade = validade
+                            )
                         )
 
-                        viewModel.cadastrarProduto(produto)
                         onVoltar()
                     }
                 },
@@ -203,6 +197,7 @@ fun TelaCadastro(
                     containerColor = PetrolBlue
                 )
             ) {
+
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null

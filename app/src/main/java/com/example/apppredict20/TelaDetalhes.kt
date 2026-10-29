@@ -1,44 +1,61 @@
 
 package com.example.apppredict20
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TelaDetalhes(
-    produto: Produto,
+    produtoId: Int,
+    produtoDAO: ProdutoDAO,
     viewModel: MeuViewModel,
     onVoltar: () -> Unit,
     onEditar: () -> Unit
 ) {
-    val produtoAtual = viewModel.buscarProduto(produto.id) ?: produto
 
-    val situacao = viewModel.verificarValidade(produtoAtual)
-
-    val corSituacao = when (situacao) {
-        "Vencido" -> ErrorColor
-        "Próximo do vencimento" -> WarningColor
-        else -> SuccessColor
+    var produtoAtual by remember(produtoId) {
+        mutableStateOf<Produto?>(null)
     }
 
-    val textoSituacao = when (situacao) {
-        "Próximo do vencimento" -> "Próximo de vencer"
-        else -> situacao
+    var carregando by remember(produtoId) {
+        mutableStateOf(true)
+    }
+
+    var erro by remember(produtoId) {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(produtoId, viewModel.produtos) {
+        try {
+            produtoAtual = withContext(Dispatchers.IO) {
+                produtoDAO.buscarPorId(produtoId)
+            }
+
+            erro = false
+
+        } catch (e: Exception) {
+            Log.e("AppPredict", "Erro ao buscar detalhes", e)
+            erro = true
+
+        } finally {
+            carregando = false
+        }
     }
 
     Scaffold(
@@ -67,7 +84,6 @@ fun TelaDetalhes(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
                 .padding(20.dp)
         ) {
 
@@ -78,157 +94,160 @@ fun TelaDetalhes(
                 color = PetrolBlueDark
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Text(
-                text = "Consulte os dados e a situação da validade.",
-                fontSize = 14.sp,
-                color = TextSecondary
-            )
+            val produto = produtoAtual
 
-            Spacer(modifier = Modifier.height(24.dp))
+            if (carregando) {
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 2.dp
+                CircularProgressIndicator(
+                    color = PetrolBlue
                 )
-            ) {
 
-                Column(
-                    modifier = Modifier.padding(20.dp)
+            } else if (erro) {
+
+                Text(
+                    text = "Erro ao consultar o produto no banco.",
+                    color = ErrorColor
+                )
+
+            } else if (produto == null) {
+
+                Text(
+                    text = "Produto não encontrado.",
+                    color = TextSecondary
+                )
+
+            } else {
+
+                val situacao = viewModel.verificarValidade(produto)
+
+                val corSituacao = when (situacao) {
+                    "Vencido" -> ErrorColor
+                    "Próximo do vencimento" -> WarningColor
+                    else -> SuccessColor
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 2.dp
+                    )
                 ) {
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier.padding(20.dp)
                     ) {
 
-                        Surface(
-                            color = PetrolBlue.copy(alpha = 0.10f),
-                            shape = RoundedCornerShape(14.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Inventory2,
                                 contentDescription = null,
                                 tint = PetrolBlue,
-                                modifier = Modifier.padding(12.dp)
+                                modifier = Modifier.size(32.dp)
                             )
-                        }
 
-                        Spacer(modifier = Modifier.width(14.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
 
-                        Column {
                             Text(
-                                text = produtoAtual.nome,
+                                text = produto.nome,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = PetrolBlueDark
                             )
+                        }
 
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        HorizontalDivider()
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Text(
+                            text = "Quantidade em estoque",
+                            fontSize = 13.sp,
+                            color = TextSecondary
+                        )
+
+                        Text(
+                            text = "${produto.quantidade} unidades",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Text(
+                            text = "Data de validade",
+                            fontSize = 13.sp,
+                            color = TextSecondary
+                        )
+
+                        Text(
+                            text = produto.validade,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Text(
+                            text = "Situação da validade",
+                            fontSize = 13.sp,
+                            color = TextSecondary
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Surface(
+                            color = corSituacao.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(50.dp)
+                        ) {
                             Text(
-                                text = "Produto cadastrado",
-                                fontSize = 12.sp,
-                                color = TextSecondary
+                                text = situacao,
+                                color = corSituacao,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(
+                                    horizontal = 14.dp,
+                                    vertical = 8.dp
+                                )
                             )
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    HorizontalDivider(
-                        color = Color(0xFFE5E7EB)
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Text(
-                        text = "Quantidade em estoque",
-                        fontSize = 13.sp,
-                        color = TextSecondary
-                    )
-
-                    Spacer(modifier = Modifier.height(5.dp))
-
-                    Text(
-                        text = "${produtoAtual.quantidade} unidades",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Text(
-                        text = "Data de validade",
-                        fontSize = 13.sp,
-                        color = TextSecondary
-                    )
-
-                    Spacer(modifier = Modifier.height(5.dp))
-
-                    Text(
-                        text = produtoAtual.validade,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Text(
-                        text = "Situação da validade",
-                        fontSize = 13.sp,
-                        color = TextSecondary
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Surface(
-                        color = corSituacao.copy(alpha = 0.12f),
-                        shape = RoundedCornerShape(50.dp)
-                    ) {
-                        Text(
-                            text = textoSituacao,
-                            color = corSituacao,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(
-                                horizontal = 14.dp,
-                                vertical = 8.dp
-                            )
-                        )
-                    }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = onEditar,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PetrolBlue
-                )
-            ) {
+                Button(
+                    onClick = onEditar,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PetrolBlue
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null
+                    )
 
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = null
-                )
+                    Spacer(modifier = Modifier.width(8.dp))
 
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = "Editar produto",
-                    fontWeight = FontWeight.SemiBold
-                )
+                    Text(
+                        text = "Editar produto",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
     }

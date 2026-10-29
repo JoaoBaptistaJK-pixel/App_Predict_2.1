@@ -16,20 +16,27 @@ class MeuViewModel : ViewModel() {
 
     private var aoCadastrar: ((Produto) -> Unit)? = null
     private var aoEditar: ((Produto) -> Unit)? = null
-    private var aoExcluir: ((Long) -> Unit)? = null
+    private var aoExcluir: ((Int) -> Unit)? = null
+    private var aoRecarregar: (() -> Unit)? = null
 
     fun configurarPersistencia(
         cadastrar: (Produto) -> Unit,
         editar: (Produto) -> Unit,
-        excluir: (Long) -> Unit
+        excluir: (Int) -> Unit,
+        recarregar: () -> Unit
     ) {
         aoCadastrar = cadastrar
         aoEditar = editar
         aoExcluir = excluir
+        aoRecarregar = recarregar
     }
 
     fun atualizarProdutos(lista: List<Produto>) {
         produtos = lista
+    }
+
+    fun recarregarProdutos() {
+        aoRecarregar?.invoke()
     }
 
     fun cadastrarProduto(produto: Produto) {
@@ -40,11 +47,11 @@ class MeuViewModel : ViewModel() {
         aoEditar?.invoke(produtoAtualizado)
     }
 
-    fun excluirProduto(id: Long) {
+    fun excluirProduto(id: Int) {
         aoExcluir?.invoke(id)
     }
 
-    fun buscarProduto(id: Long): Produto? {
+    fun buscarProduto(id: Int): Produto? {
         return produtos.find { it.id == id }
     }
 
@@ -53,6 +60,7 @@ class MeuViewModel : ViewModel() {
     }
 
     fun verificarValidade(produto: Produto): String {
+
         val formato = DateTimeFormatter.ofPattern("dd/MM/uuuu")
         val dataValidade = LocalDate.parse(produto.validade, formato)
         val hoje = LocalDate.now()

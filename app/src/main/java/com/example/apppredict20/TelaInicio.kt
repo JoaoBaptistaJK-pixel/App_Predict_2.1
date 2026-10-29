@@ -23,7 +23,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TelaInicio(
     viewModel: MeuViewModel,
-    onCadastrar: () -> Unit
+    onCadastrar: () -> Unit,
+    onCategorias: () -> Unit
 ) {
 
     val totalProdutos = viewModel.produtos.size
@@ -249,5 +250,25 @@ fun TelaInicio(
         }
 
         Spacer(modifier = Modifier.height(20.dp))
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedButton(
+            onClick = onCategorias,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text("Categorias")
+        }
+
     }
 }

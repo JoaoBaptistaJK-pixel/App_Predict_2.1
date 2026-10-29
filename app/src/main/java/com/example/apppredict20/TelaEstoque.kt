@@ -3,8 +3,8 @@ package com.example.apppredict20
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inventory2
@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,93 +24,104 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TelaEstoque(
     viewModel: MeuViewModel,
-    onEditar: (Long) -> Unit,
-    onDetalhes: (Long) -> Unit
+    onEditar: (Int) -> Unit,
+    onDetalhes: (Int) -> Unit
 ) {
 
-    Column(
+    LaunchedEffect(Unit) {
+        viewModel.recarregarProdutos()
+    }
+
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppBackground)
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
+            .background(AppBackground),
+        contentPadding = PaddingValues(20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(
-                    text = "Meu estoque",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = PetrolBlueDark
-                )
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "Meu estoque",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = PetrolBlueDark
+                    )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                Text(
-                    text = "${viewModel.produtos.size} produtos cadastrados",
-                    fontSize = 14.sp,
-                    color = TextSecondary
+                    Text(
+                        text = "${viewModel.produtos.size} produtos cadastrados",
+                        fontSize = 14.sp,
+                        color = TextSecondary
+                    )
+                }
+
+                Icon(
+                    imageVector = Icons.Default.Inventory2,
+                    contentDescription = null,
+                    tint = PetrolBlue,
+                    modifier = Modifier.size(32.dp)
                 )
             }
 
-            Icon(
-                imageVector = Icons.Default.Inventory2,
-                contentDescription = null,
-                tint = PetrolBlue,
-                modifier = Modifier.size(32.dp)
-            )
+            Spacer(modifier = Modifier.height(10.dp))
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
 
         if (viewModel.produtos.isEmpty()) {
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    )
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Inventory2,
-                        contentDescription = null,
-                        tint = TextSecondary,
-                        modifier = Modifier.size(42.dp)
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(28.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Inventory2,
+                            contentDescription = null,
+                            tint = TextSecondary,
+                            modifier = Modifier.size(42.dp)
+                        )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
-                        text = "Seu estoque está vazio",
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
+                        Text(
+                            text = "Seu estoque está vazio",
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                    Text(
-                        text = "Cadastre seu primeiro produto para começar.",
-                        color = TextSecondary,
-                        fontSize = 13.sp
-                    )
+                        Text(
+                            text = "Cadastre seu primeiro produto para começar.",
+                            color = TextSecondary,
+                            fontSize = 13.sp
+                        )
+                    }
                 }
             }
 
         } else {
 
-            for (produto in viewModel.produtos) {
+            items(
+                items = viewModel.produtos,
+                key = { produto -> produto.id }
+            ) { produto ->
 
                 val situacao = viewModel.verificarValidade(produto)
 
@@ -125,9 +137,7 @@ fun TelaEstoque(
                 }
 
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 14.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = Color.White
@@ -199,8 +209,7 @@ fun TelaEstoque(
                             TextButton(
                                 onClick = { onDetalhes(produto.id) },
                                 contentPadding = PaddingValues(
-                                    horizontal = 4.dp,
-                                    vertical = 4.dp
+                                    horizontal = 4.dp
                                 )
                             ) {
                                 Icon(
@@ -217,8 +226,7 @@ fun TelaEstoque(
                             TextButton(
                                 onClick = { onEditar(produto.id) },
                                 contentPadding = PaddingValues(
-                                    horizontal = 4.dp,
-                                    vertical = 4.dp
+                                    horizontal = 4.dp
                                 )
                             ) {
                                 Icon(
@@ -240,8 +248,7 @@ fun TelaEstoque(
                                     contentColor = ErrorColor
                                 ),
                                 contentPadding = PaddingValues(
-                                    horizontal = 4.dp,
-                                    vertical = 4.dp
+                                    horizontal = 4.dp
                                 )
                             ) {
                                 Icon(
@@ -259,7 +266,5 @@ fun TelaEstoque(
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
     }
 }
