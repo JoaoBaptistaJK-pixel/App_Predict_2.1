@@ -507,35 +507,57 @@ Esta seção reúne as imagens e os vídeos utilizados para demonstrar as funcio
 
 **Figura 1 — Tela inicial**
 
-[Inserir imagem da tela inicial]
+<img src="imagens/01-inicio.jpg" width="280" alt="Tela inicial do App Predict">
+  
 
 **Figura 2 — Cadastro de produtos**
 
-[Inserir imagem do formulário]
+Formulário utilizado para cadastrar produtos com nome, quantidade e data de validade.
+
+<img src="imagens/02-cadastro-produto.jpg" width="280" alt="Cadastro de produtos">
 
 **Figura 3 — Estoque**
 
-[Inserir imagem dos cartões de produtos]
+Listagem dos produtos cadastrados, com informações de validade e opções de consultar detalhes, editar ou excluir.
 
-**Figura 4 — Detalhes e edição**
+<img src="imagens/03-estoque.jpg" width="280" alt="Tela de estoque">
 
-[Inserir imagens das telas]
+**Figura 4 — Detalhes do produto**
 
-**Figura 5 — Alertas de validade**
+Consulta individual de um produto, apresentando suas informações e a situação da validade.
 
-[Inserir imagem dos alertas]
+<img src="imagens/04-detalhes-produto.jpg" width="280" alt="Detalhes do produto">
 
-**Figura 6 — Produtos vencidos**
+**Figura 5 — Edição de produtos**
 
-[Inserir imagem da tela]
+Formulário de atualização das informações de um produto existente.
 
-**Figura 7 — Gerenciamento de categorias**
+<img src="imagens/05-editar-produto.jpg" width="280" alt="Edição de produtos">
 
-[Inserir imagem da listagem]
+**Figura 6 — Alertas de validade**
 
-**Figura 8 — Cadastro e edição de categorias**
+Produtos identificados como próximos do vencimento, com destaque visual para a situação de alerta.
 
-[Inserir imagens dos formulários]
+<img src="imagens/06-alertas.jpg" width="280" alt="Alertas de validade">
+
+**Figura 7 — Produtos vencidos**
+
+Listagem específica dos produtos que ultrapassaram a data de validade.
+
+<img src="imagens/07-produtos-vencidos.jpg" width="280" alt="Produtos vencidos">
+
+**Figura 8 — Gerenciamento de categorias**
+
+Categorias cadastradas, exibidas em cartões com opções de edição e exclusão.
+
+<img src="imagens/08-categorias.jpg" width="280" alt="Gerenciamento de categorias">
+
+**Figura 9 — Edição de categorias**
+
+Formulário de edição do nome e da descrição de uma categoria cadastrada.
+
+<img src="imagens/09-editar-categoria.jpg" width="280" alt="Edição de categorias">
+
 
 ### Vídeos de demonstração
 
